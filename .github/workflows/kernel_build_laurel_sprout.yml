@@ -26,12 +26,6 @@ jobs:
         run: |
           echo "DATE=$(date +%d%m%Y)" >> $GITHUB_ENV
 
-      - name: 🔄 Update KernelSU-Next
-        run: |
-          cd kernel_xiaomi_sm6125
-          rm -rf KernelSU-Next
-          git clone https://github.com/KernelSU-Next/KernelSU-Next -b next-susfs
-
       - name: 📥 Clone AnyKernel3
         run: |
           cd kernel_xiaomi_sm6125
