@@ -104,6 +104,6 @@ jobs:
           DEVICE_CODENAME: laurel_sprout
           KERNEL_VERSION: 4.14.355
           WEBHOOK: ${{ secrets.WEBHOOK }}
-          NAME: KernelSU-Next-Caelum-miatoll-4.14.355.zip
+          NAME: KernelSU-Next-Caelum-laurel_sprout-4.14.355.zip
         run: |
           python3 .github/webhook.py
