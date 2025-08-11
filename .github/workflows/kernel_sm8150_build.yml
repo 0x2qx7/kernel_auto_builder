@@ -25,13 +25,6 @@ jobs:
       - name: 📅 Export date of build
         run: |
           echo "DATE=$(date +%d%m%Y)" >> $GITHUB_ENV
-   
-      - name: 🔄 Update KernelSU-Next
-        run: |
-          cd kernel_oneplus_sm8150
-          rm -rf KernelSU-Next
-          git clone https://github.com/KernelSU-Next/KernelSU-Next -b v1.0.6
-
 
       - name: 📥 Clone AnyKernel3
         run: |
