@@ -20,7 +20,7 @@ jobs:
  
       - name: ⚡ Checkout kernel's sourcecode and clone submodules
         run: |
-          git clone --depth=1 https://github.com/Evolution-x-devices/kernel_xiaomi_sm6250/ kernel_xiaomi_sm6250 -b vic
+          git clone --depth=1 https://github.com/Evolution-x-devices/kernel_xiaomi_sm6250/ kernel_xiaomi_sm6250 -b vic-testing
 
       - name: 📅 Export date of build
         run: |
@@ -90,7 +90,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ZIP_NAME }}
-          tag_name: Kernel-Caelum-${{ env.DEVICE_CODENAME }}-${{ env.KERNEL_VERSION }}-${{ env.DATE }}
+          tag_name: Kernel-Caelum-TESTING-${{ env.DEVICE_CODENAME }}-${{ env.KERNEL_VERSION }}-${{ env.DATE }}
           draft: false
           prerelease: false
 
@@ -107,6 +107,6 @@ jobs:
           DEVICE_CODENAME: miatoll
           KERNEL_VERSION: 4.14.336
           WEBHOOK: ${{ secrets.WEBHOOK }}
-          NAME: Kernel-Caelum-miatoll-4.14.336.zip
+          NAME: Kernel-Caelum-TESTING-miatoll-4.14.356.zip
         run: |
           python3 .github/webhook.py
