@@ -62,7 +62,6 @@ jobs:
 
           cp out/arch/arm64/boot/Image.gz anykernel/
           cp out/arch/arm64/boot/dtbo.img anykernel/
-          cp out/arch/arm64/boot/dtb.img anykernel/dtb
 
           cd anykernel && zip -r9 $ZIP_NAME ./*
           mv $ZIP_NAME ../../
