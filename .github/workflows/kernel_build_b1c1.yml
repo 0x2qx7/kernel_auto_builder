@@ -65,7 +65,7 @@ jobs:
       - name: 🔧 Install Clang from a Github action
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: "18.1.8"
+          version: "20.1.4"
           directory: ${{ runner.temp }}/llvm
 
       - name: 🔧 Add Clang to the PATH
