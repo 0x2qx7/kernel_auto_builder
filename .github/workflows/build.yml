@@ -1,0 +1,357 @@
+name: Build KernelSU-Next for the whole sdm845 serie (Polaris/Beryllium/Ursa/Perseus/Equuleus/Dipper)
+
+on:
+  push:
+    branches:
+      - sdm845
+  pull_request:
+    branches:
+      - sdm845
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    container: ghcr.io/tedomi2705/kernel_builder_image:latest
+
+    steps:
+      - name: 📂 Checkout builder's sourcecode and get files
+        uses: actions/checkout@v4
+
+      - name: ⚡ Checkout kernel's sourcecode and clone submodules
+        run: |
+          git clone --depth=1 https://github.com/tedomi2705/kernel_xiaomi_sdm845 -b vic-susfs
+
+      - name: 📅 Export date of build
+        run: |
+          echo "DATE=$(date +%d%m%Y)" >> $GITHUB_ENV
+
+      - name: 🔄 Update KernelSU-Next
+        run: |
+          cd kernel_xiaomi_sdm845
+          rm -rf KernelSU-Next
+          git clone --depth=1 https://github.com/KernelSU-Next/KernelSU-Next -b next-susfs
+
+      - name: 📥 Clone AnyKernel3
+        run: |
+          cd kernel_xiaomi_sdm845
+          git clone -b sdm845 --depth=1 https://github.com/Oneloutre/AnyKernel3.git anykernel
+          rm -rf anykernel/.git
+
+      - name: 🚀 Enable ccache to speed the build up
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          max-size: 7G
+
+      - name: 🔍 Polaris - codename and kernel's version
+        run: |
+          cd kernel_xiaomi_sdm845
+          DEVICE_CODENAME=polaris
+          KERNEL_VERSION=$(make kernelversion | tail -n 2 | head -n 1)
+
+          echo "Device Codename: $DEVICE_CODENAME"
+          echo "Kernel Version: $KERNEL_VERSION"
+
+          echo "DEVICE_CODENAME=$DEVICE_CODENAME" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+
+      - name: 🛠️ Build Polaris's kramel
+        run: |
+          ./build.sh polaris
+
+      - name: 🚀 Copy Polaris's kernel to AnyKernel3 then create the zip
+        run: |
+          cd kernel_xiaomi_sdm845
+          ZIP_NAME="Kernel-Hayasaka-${DEVICE_CODENAME}-${KERNEL_VERSION}-$(date +%d%m%Y).zip"
+
+          cp out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          sed -i "13s|.*|device.name1=$DEVICE_CODENAME|" anykernel.sh
+
+          zip -r9 $ZIP_NAME ./*
+          mv $ZIP_NAME ../../
+
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 🤌 Copy zip file to get 2 different zip files
+        run: |
+
+          ZIP_ALTERNATIVE="KernelSU-Next-Hayasaka-${DEVICE_CODENAME}-latest.zip"
+          cp ${ZIP_NAME} $ZIP_ALTERNATIVE
+
+          echo "Copied ${ZIP_NAME} as $ZIP_ALTERNATIVE"
+          echo "ZIP_ALTERNATIVE=$ZIP_ALTERNATIVE" >> $GITHUB_ENV
+
+
+      - name: 🚿 Clean directories before next build
+        run: |
+          cd kernel_xiaomi_sdm845
+          make clean
+
+
+      - name: 🔍 Beryllium - codename and kernel's version
+        run: |
+          cd kernel_xiaomi_sdm845
+          DEVICE_CODENAME=beryllium
+          KERNEL_VERSION=$(make kernelversion | tail -n 2 | head -n 1)
+
+          echo "Device Codename: $DEVICE_CODENAME"
+          echo "Kernel Version: $KERNEL_VERSION"
+
+          echo "DEVICE_CODENAME=$DEVICE_CODENAME" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+
+      - name: 🛠️ Build Beryllium's kramel
+        run: |
+          ./build.sh beryllium
+
+      - name: 🚀 Copy Beryllium's kernel to AnyKernel3 then create the zip
+        run: |
+          cd kernel_xiaomi_sdm845
+          ZIP_NAME="Kernel-Hayasaka-${DEVICE_CODENAME}-${KERNEL_VERSION}-$(date +%d%m%Y).zip"
+
+          cp out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          sed -i "13s|.*|device.name1=$DEVICE_CODENAME|" anykernel.sh
+
+          zip -r9 $ZIP_NAME ./*
+          mv $ZIP_NAME ../../
+
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 🤌 Copy zip file to get 2 different zip files
+        run: |
+
+          ZIP_ALTERNATIVE="KernelSU-Next-Hayasaka-${DEVICE_CODENAME}-latest.zip"
+          cp ${ZIP_NAME} $ZIP_ALTERNATIVE
+
+          echo "Copied ${ZIP_NAME} as $ZIP_ALTERNATIVE"
+          echo "ZIP_ALTERNATIVE=$ZIP_ALTERNATIVE" >> $GITHUB_ENV
+
+      - name: 🚿 Clean directories before next build
+        run: |
+          cd kernel_xiaomi_sdm845
+          make clean
+
+
+      - name: 🔍 Dipper - codename and kernel's version
+        run: |
+          cd kernel_xiaomi_sdm845
+          DEVICE_CODENAME=dipper
+          KERNEL_VERSION=$(make kernelversion | tail -n 2 | head -n 1)
+
+          echo "Device Codename: $DEVICE_CODENAME"
+          echo "Kernel Version: $KERNEL_VERSION"
+
+          echo "DEVICE_CODENAME=$DEVICE_CODENAME" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+
+      - name: 🛠️ Build Dipper's kramel
+        run: |
+          ./build.sh dipper
+
+      - name: 🚀 Copy Dipper's kernel to AnyKernel3 then create the zip
+        run: |
+          cd kernel_xiaomi_sdm845
+          ZIP_NAME="Kernel-Hayasaka-${DEVICE_CODENAME}-${KERNEL_VERSION}-$(date +%d%m%Y).zip"
+
+          cp out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          sed -i "13s|.*|device.name1=$DEVICE_CODENAME|" anykernel.sh
+
+          zip -r9 $ZIP_NAME ./*
+          mv $ZIP_NAME ../../
+
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 🤌 Copy zip file to get 2 different zip files
+        run: |
+
+          ZIP_ALTERNATIVE="KernelSU-Next-Hayasaka-${DEVICE_CODENAME}-latest.zip"
+          cp ${ZIP_NAME} $ZIP_ALTERNATIVE
+
+          echo "Copied ${ZIP_NAME} as $ZIP_ALTERNATIVE"
+          echo "ZIP_ALTERNATIVE=$ZIP_ALTERNATIVE" >> $GITHUB_ENV
+
+      - name: 🚿 Clean directories before next build
+        run: |
+          cd kernel_xiaomi_sdm845
+          make clean
+
+
+      - name: 🔍 Perseus - codename and kernel's version
+        run: |
+          cd kernel_xiaomi_sdm845
+          DEVICE_CODENAME=perseus
+          KERNEL_VERSION=$(make kernelversion | tail -n 2 | head -n 1)
+
+          echo "Device Codename: $DEVICE_CODENAME"
+          echo "Kernel Version: $KERNEL_VERSION"
+
+          echo "DEVICE_CODENAME=$DEVICE_CODENAME" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+
+      - name: 🛠️ Build Perseus's kramel
+        run: |
+          ./build.sh perseus
+
+      - name: 🚀 Copy Perseus's kernel to AnyKernel3 then create the zip
+        run: |
+          cd kernel_xiaomi_sdm845
+          ZIP_NAME="Kernel-Hayasaka-${DEVICE_CODENAME}-${KERNEL_VERSION}-$(date +%d%m%Y).zip"
+
+          cp out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          sed -i "13s|.*|device.name1=$DEVICE_CODENAME|" anykernel.sh
+
+          zip -r9 $ZIP_NAME ./*
+          mv $ZIP_NAME ../../
+
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 🤌 Copy zip file to get 2 different zip files
+        run: |
+
+          ZIP_ALTERNATIVE="KernelSU-Next-Hayasaka-${DEVICE_CODENAME}-latest.zip"
+          cp ${ZIP_NAME} $ZIP_ALTERNATIVE
+
+          echo "Copied ${ZIP_NAME} as $ZIP_ALTERNATIVE"
+          echo "ZIP_ALTERNATIVE=$ZIP_ALTERNATIVE" >> $GITHUB_ENV
+
+      
+      - name: 🚿 Clean directories before next build
+        run: |
+          cd kernel_xiaomi_sdm845
+          make clean
+
+
+      - name: 🔍 Ursa - codename and kernel's version
+        run: |
+          cd kernel_xiaomi_sdm845
+          DEVICE_CODENAME=ursa
+          KERNEL_VERSION=$(make kernelversion | tail -n 2 | head -n 1)
+
+          echo "Device Codename: $DEVICE_CODENAME"
+          echo "Kernel Version: $KERNEL_VERSION"
+
+          echo "DEVICE_CODENAME=$DEVICE_CODENAME" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+
+      - name: 🛠️ Build Ursa's kramel
+        run: |
+          ./build.sh ursa
+
+      - name: 🚀 Copy Ursa's kernel to AnyKernel3 then create the zip
+        run: |
+          cd kernel_xiaomi_sdm845
+          ZIP_NAME="Kernel-Hayasaka-${DEVICE_CODENAME}-${KERNEL_VERSION}-$(date +%d%m%Y).zip"
+
+          cp out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          sed -i "13s|.*|device.name1=$DEVICE_CODENAME|" anykernel.sh
+
+          zip -r9 $ZIP_NAME ./*
+          mv $ZIP_NAME ../../
+
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 🤌 Copy zip file to get 2 different zip files
+        run: |
+
+          ZIP_ALTERNATIVE="KernelSU-Next-Hayasaka-${DEVICE_CODENAME}-latest.zip"
+          cp ${ZIP_NAME} $ZIP_ALTERNATIVE
+
+          echo "Copied ${ZIP_NAME} as $ZIP_ALTERNATIVE"
+          echo "ZIP_ALTERNATIVE=$ZIP_ALTERNATIVE" >> $GITHUB_ENV
+
+
+      - name: 🚿 Clean directories before next build
+        run: |
+          cd kernel_xiaomi_sdm845
+          make clean
+
+
+      - name: 🔍 Equuleus - codename and kernel's version
+        run: |
+          cd kernel_xiaomi_sdm845
+          DEVICE_CODENAME=equuleus
+          KERNEL_VERSION=$(make kernelversion | tail -n 2 | head -n 1)
+
+          echo "Device Codename: $DEVICE_CODENAME"
+          echo "Kernel Version: $KERNEL_VERSION"
+
+          echo "DEVICE_CODENAME=$DEVICE_CODENAME" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=$KERNEL_VERSION" >> $GITHUB_ENV
+
+      - name: 🛠️ Build Equuleus's kramel
+        run: |
+          ./build.sh equuleus
+
+      - name: 🚀 Copy Equuleus's kernel to AnyKernel3 then create the zip
+        run: |
+          cd kernel_xiaomi_sdm845
+          ZIP_NAME="Kernel-Hayasaka-${DEVICE_CODENAME}-${KERNEL_VERSION}-$(date +%d%m%Y).zip"
+
+          cp out/arch/arm64/boot/Image.gz-dtb anykernel/
+          cd anykernel
+          sed -i "13s|.*|device.name1=$DEVICE_CODENAME|" anykernel.sh
+
+          zip -r9 $ZIP_NAME ./*
+          mv $ZIP_NAME ../../
+
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 🤌 Copy zip file to get 2 different zip files
+        run: |
+
+          ZIP_ALTERNATIVE="KernelSU-Next-Hayasaka-${DEVICE_CODENAME}-latest.zip"
+          cp ${ZIP_NAME} $ZIP_ALTERNATIVE
+
+          echo "Copied ${ZIP_NAME} as $ZIP_ALTERNATIVE"
+          echo "ZIP_ALTERNATIVE=$ZIP_ALTERNATIVE" >> $GITHUB_ENV
+
+
+      - name: 📤 Publish github release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "latest"
+          draft: false
+          files: | 
+            KernelSU-Next-Hayasaka-polaris-latest.zip
+            KernelSU-Next-Hayasaka-equuleus-latest.zip
+            KernelSU-Next-Hayasaka-beryllium-latest.zip
+            KernelSU-Next-Hayasaka-dipper-latest.zip
+            KernelSU-Next-Hayasaka-ursa-latest.zip
+            KernelSU-Next-Hayasaka-perseus-latest.zip
+
+      - name: 📤 Publish with tag associated to the kernel
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: Kernel-Hayasaka-sdm845-serie-${{ env.KERNEL_VERSION }}-${{ env.DATE }}
+          draft: false
+          prerelease: false
+          files: |
+            Kernel-Hayasaka-polaris-${{ env.KERNEL_VERSION }}-${{ env.DATE }}.zip
+            Kernel-Hayasaka-equuleus-${{ env.KERNEL_VERSION }}-${{ env.DATE }}.zip
+            Kernel-Hayasaka-beryllium-${{ env.KERNEL_VERSION }}-${{ env.DATE }}.zip
+            Kernel-Hayasaka-dipper-${{ env.KERNEL_VERSION }}-${{ env.DATE }}.zip
+            Kernel-Hayasaka-ursa-${{ env.KERNEL_VERSION }}-${{ env.DATE }}.zip
+            Kernel-Hayasaka-perseus-${{ env.KERNEL_VERSION }}-${{ env.DATE }}.zip
+
+  notification:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+
+      - name: 📂 Checkout builder's sourcecode and get files
+        uses: actions/checkout@v4
+
+      - name: 🚀 Notify people on Discord
+        env:
+          DEVICE_CODENAME: sdm845-serie
+          KERNEL_VERSION: 4.9
+          WEBHOOK: ${{ secrets.WEBHOOK }}
+          NAME: Kernel-Hayasaka-SUSFS-sdm845-serie-${{ env.KERNEL_VERSION }}-${{ env.DATE }}
+        run: |
+          python3 .github/webhook.py
+          
